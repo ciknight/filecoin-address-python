@@ -5,6 +5,10 @@
 # Copyright © 2020 Andy Wang <ci_knight@msn.cn>
 #
 # Distributed under terms of the MIT license.
+class Blake2bConfig:
+    def __init__(self, size: int):
+        self.size = size
+
 
 # PayloadHashLength defines the hash length taken over addresses using the Actor and SECP256K1 protocols.
 PayloadHashLength = 20
@@ -21,3 +25,9 @@ BlsPublicKeyBytes = 48
 
 # BlsPrivateKeyBytes is the length of a BLS private key
 BlsPrivateKeyBytes = 32
+
+
+payloadHashConfig = Blake2bConfig(PayloadHashLength)
+checksumHashConfig = Blake2bConfig(ChecksumHashLength)
+
+encodeStd = "abcdefghijklmnopqrstuvwxyz234567"

@@ -8,7 +8,7 @@
 import varints
 from exceptions import AddressException
 from consts import PayloadHashLength, BlsPublicKeyBytes
-from utils import b2s
+from utils import s2b, b2s, address_hash
 
 
 class NetWork:
@@ -27,10 +27,23 @@ class Protocol:
     Actor = 2
     BLS = 3
 
+    Unknown = 255
+
 
 class Address:
-    def __init__(self, payload: str = None):
-        self.payload = payload
+    def __init__(self, payload: str):
+        self._payload = payload
+
+    @property
+    def protocol(self) -> int:
+        if len(self.payload) == 0:
+            return Protocol.Unknown
+
+        return int(self._payload[0])
+
+    @property
+    def payload(self) -> bytes:
+        return s2b(self._payload[1:])
 
     def __repr__(self):
         return f"Address({repr(self.payload)})"
@@ -59,3 +72,8 @@ def new_id_address(id_: int) -> Address:
         raise AddressException("IDs must be less than 2^63")
 
     return new_address(Protocol.ID, varints.encode(id_))
+
+
+# NewSecp256k1Address returns an address using the SECP256K1 protocol.
+def new_spec256k1_address(pubkey: bytes) -> Address:
+    return new_address(Protocol.SECP256K1, address_hash(pubkey))
