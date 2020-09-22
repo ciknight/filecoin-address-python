@@ -8,7 +8,7 @@
 import varints
 from exceptions import AddressException
 from consts import PayloadHashLength, BlsPublicKeyBytes
-from utils import s2b, b2s, address_hash
+from utils import s2b, address_hash, checksum, address_encode
 
 
 class NetWork:
@@ -31,7 +31,7 @@ class Protocol:
 
 
 class Address:
-    def __init__(self, payload: str):
+    def __init__(self, payload: bytes):
         self._payload = payload
 
     @property
@@ -43,7 +43,7 @@ class Address:
 
     @property
     def payload(self) -> bytes:
-        return s2b(self._payload[1:])
+        return self._payload[1:]
 
     def __repr__(self):
         return f"Address({repr(self.payload)})"
@@ -62,7 +62,7 @@ def new_address(protocol: int, payload: bytes) -> Address:
     else:
         raise NotImplementedError
 
-    buf = str(protocol) + b2s(payload)
+    buf = s2b(protocol) + payload
     return Address(buf)
 
 
@@ -77,3 +77,23 @@ def new_id_address(id_: int) -> Address:
 # NewSecp256k1Address returns an address using the SECP256K1 protocol.
 def new_spec256k1_address(pubkey: bytes) -> Address:
     return new_address(Protocol.SECP256K1, address_hash(pubkey))
+
+
+def encode(network: int, addr: Address):
+    if network == NetWork.Mainnet:
+        ntwk = Prefix.Mainnet
+    elif network == NetWork.Testnet:
+        ntwk = Prefix.Testnet
+    else:
+        raise AddressException(f"Error network {network}")
+
+    addr_str: str = ""
+    if addr.protocol in (Protocol.SECP256K1, Protocol.Actor, Protocol.BLS):
+        cksm = checksum(s2b(addr.protocol) + addr.payload)
+        addr_str = f"{ntwk}{addr.protocol}{address_encode(addr.payload + cksm)}"
+    elif addr.protocol == Protocol.ID:
+        raise NotImplementedError
+    else:
+        raise AddressException(f"Error protocol {addr.protocol}")
+
+    return addr_str
