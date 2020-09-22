@@ -5,6 +5,7 @@
 # Copyright © 2020 Andy Wang <ci_knight@msn.cn>
 #
 # Distributed under terms of the MIT license.
+import struct
 from base64 import b32encode
 from typing import Union
 from hashlib import blake2b
@@ -13,18 +14,22 @@ from consts import Blake2bConfig, payloadHashConfig, checksumHashConfig
 
 # Bytes to Str
 def b2s(b: bytes) -> str:
+    if len(b) == 1:
+        return str(struct.unpack("b", b)[0])
+
     return b.decode("latin-1")
 
 
 # Str to Bytes
 def s2b(s: Union[str, int]) -> bytes:
-    s = str(s)
+    if isinstance(s, int):
+        return struct.pack("b", s)
+
     return s.encode("latin-1")
 
 
 def _hash(ingest: bytes, config: Blake2bConfig) -> bytes:
-    hexdigest = blake2b(ingest, digest_size=config.size).hexdigest()
-    return s2b(hexdigest)
+    return blake2b(ingest, digest_size=config.size).digest()
 
 
 def address_hash(ingest: bytes) -> bytes:
@@ -32,7 +37,7 @@ def address_hash(ingest: bytes) -> bytes:
 
 
 # Checksum returns the checksum of `ingest`.
-def checksum(ingest: bytes):
+def checksum(ingest: bytes) -> bytes:
     return _hash(ingest, checksumHashConfig)
 
 
@@ -42,4 +47,4 @@ def validate_checksum(ingest: bytes, expect: bytes) -> bool:
 
 
 def address_encode(ingest: bytes) -> str:
-    return b32encode(ingest).decode()
+    return b32encode(ingest).decode().lower().rstrip("=")

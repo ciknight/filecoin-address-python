@@ -8,7 +8,7 @@
 import varints
 from exceptions import AddressException
 from consts import PayloadHashLength, BlsPublicKeyBytes
-from utils import s2b, address_hash, checksum, address_encode
+from utils import s2b, b2s, address_hash, checksum, address_encode
 
 
 class NetWork:
@@ -39,14 +39,17 @@ class Address:
         if len(self.payload) == 0:
             return Protocol.Unknown
 
-        return int(self._payload[0])
+        return int(b2s(self._payload[:1]))
 
     @property
     def payload(self) -> bytes:
         return self._payload[1:]
 
+    def to_string(self) -> str:
+        return encode(NetWork.Testnet, self)
+
     def __repr__(self):
-        return f"Address({repr(self.payload)})"
+        return f"Address({repr(self.to_string())})"
 
 
 def new_address(protocol: int, payload: bytes) -> Address:
