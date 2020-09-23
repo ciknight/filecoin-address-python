@@ -19,6 +19,7 @@ ChecksumHashLength = 4
 # MaxAddressStringLength is the max length of an address encoded as a string
 # it include the network prefx, protocol, and bls publickey
 MaxAddressStringLength = 2 + 84
+MinAddressStringLength = 3
 
 # BlsPublicKeyBytes is the length of a BLS public key
 BlsPublicKeyBytes = 48

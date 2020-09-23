@@ -9,7 +9,12 @@ from typing import Union
 
 import varints
 from exceptions import AddressException
-from consts import PayloadHashLength, BlsPublicKeyBytes
+from consts import (
+    PayloadHashLength,
+    BlsPublicKeyBytes,
+    MaxAddressStringLength,
+    MinAddressStringLength,
+)
 from utils import s2b, b2s, address_hash, checksum, address_encode
 
 
@@ -38,7 +43,7 @@ class Address:
 
     @property
     def protocol(self) -> int:
-        if len(self.payload) == 0:
+        if len(self._payload) == 0:
             return Protocol.Unknown
 
         return int(b2s(self._payload[:1]))
@@ -46,6 +51,9 @@ class Address:
     @property
     def payload(self) -> bytes:
         return self._payload[1:]
+
+    def checksum(self) -> bytes:
+        return checksum(s2b(self.protocol) + self.payload)
 
     def to_string(self) -> str:
         return encode(NetWork.Testnet, self)
@@ -97,8 +105,9 @@ def encode(network: int, addr: Address):
 
     addr_str: str = ""
     if addr.protocol in (Protocol.SECP256K1, Protocol.Actor, Protocol.BLS):
-        cksm = checksum(s2b(addr.protocol) + addr.payload)
-        addr_str = f"{ntwk}{addr.protocol}{address_encode(addr.payload + cksm)}"
+        addr_str = (
+            f"{ntwk}{addr.protocol}{address_encode(addr.payload + addr.checksum())}"
+        )
     elif addr.protocol == Protocol.ID:
         raise NotImplementedError
     else:
