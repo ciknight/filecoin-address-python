@@ -5,6 +5,8 @@
 # Copyright © 2020 Andy Wang <ci_knight@msn.cn>
 #
 # Distributed under terms of the MIT license.
+from typing import Union
+
 import varints
 from exceptions import AddressException
 from consts import PayloadHashLength, BlsPublicKeyBytes
@@ -78,7 +80,10 @@ def new_id_address(id_: int) -> Address:
 
 
 # NewSecp256k1Address returns an address using the SECP256K1 protocol.
-def new_spec256k1_address(pubkey: bytes) -> Address:
+def new_spec256k1_address(pubkey: Union[bytes, str]) -> Address:
+    if isinstance(pubkey, str):
+        pubkey = s2b(pubkey)
+
     return new_address(Protocol.SECP256K1, address_hash(pubkey))
 
 

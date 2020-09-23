@@ -5,6 +5,7 @@
 # Copyright © 2020 Andy Wang <ci_knight@msn.cn>
 #
 # Distributed under terms of the MIT license.
+import binascii
 import struct
 from base64 import b32encode
 from typing import Union
@@ -17,7 +18,7 @@ def b2s(b: bytes) -> str:
     if len(b) == 1:
         return str(struct.unpack("b", b)[0])
 
-    return b.decode("latin-1")
+    return binascii.hexlify(b).decode()
 
 
 # Str to Bytes
@@ -25,7 +26,7 @@ def s2b(s: Union[str, int]) -> bytes:
     if isinstance(s, int):
         return struct.pack("b", s)
 
-    return s.encode("latin-1")
+    return binascii.unhexlify(s)
 
 
 def _hash(ingest: bytes, config: Blake2bConfig) -> bytes:
