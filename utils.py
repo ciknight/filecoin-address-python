@@ -7,7 +7,7 @@
 # Distributed under terms of the MIT license.
 import binascii
 import struct
-from base64 import b32encode
+from base64 import b32encode, b32decode
 from typing import Union
 from hashlib import blake2b
 from consts import Blake2bConfig, payloadHashConfig, checksumHashConfig
@@ -47,5 +47,14 @@ def validate_checksum(ingest: bytes, expect: bytes) -> bool:
     return checksum(ingest) == expect
 
 
+# payload + checksum Base32 encode
 def address_encode(ingest: bytes) -> str:
     return b32encode(ingest).decode().lower().rstrip("=")
+
+
+def _b32_padding(s: str):
+    return s + ("=" * (8 - (len(s) % 8)))
+
+
+def address_decode(ingest: str) -> bytes:
+    return b32decode(_b32_padding(ingest.upper()))

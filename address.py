@@ -8,14 +8,22 @@
 from typing import Union
 
 import varints
-from exceptions import AddressException
 from consts import (
-    PayloadHashLength,
     BlsPublicKeyBytes,
     MaxAddressStringLength,
     MinAddressStringLength,
+    PayloadHashLength,
 )
-from utils import s2b, b2s, address_hash, checksum, address_encode
+from exceptions import AddressException
+from utils import (
+    address_decode,
+    address_encode,
+    address_hash,
+    b2s,
+    checksum,
+    s2b,
+    validate_checksum,
+)
 
 
 class NetWork:
@@ -35,6 +43,13 @@ class Protocol:
     BLS = 3
 
     Unknown = 255
+
+    All = {
+        ID,
+        SECP256K1,
+        Actor,
+        BLS,
+    }
 
 
 class Address:
@@ -114,3 +129,34 @@ def encode(network: int, addr: Address):
         raise AddressException(f"Error protocol {addr.protocol}")
 
     return addr_str
+
+
+def decode(a: str) -> Address:
+    if len(a) == 0:
+        raise AddressException("Address string is null")
+
+    if len(a) > MaxAddressStringLength or len(a) < MinAddressStringLength:
+        raise AddressException("Invalid address length")
+
+    if a[0] != Prefix.Mainnet and a[0] != Prefix.Testnet:
+        raise AddressException("Invalid address network")
+
+    protocol = int(a[1])
+    if protocol not in Protocol.All:
+        raise AddressException("Invalid address protocol")
+
+    raw = a[2:]
+    if protocol == Protocol.ID:
+        # 20 is length of math.MaxUint64 as a string
+        if len(raw) > 20:
+            raise AddressException("Invalid address length")
+
+        return new_address(protocol, varints.encode(int(raw)))
+
+    payloadcksm = address_decode(raw)
+    payload, cksm = payloadcksm[:-4], payloadcksm[-4:]
+
+    if validate_checksum(s2b(protocol) + payload, cksm) is False:
+        raise AddressException("Invalid payload")
+
+    return new_address(protocol, payload)

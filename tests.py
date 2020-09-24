@@ -5,7 +5,7 @@
 # Copyright © 2020 Andy Wang <ci_knight@msn.cn>
 #
 # Distributed under terms of the MIT license.
-from address import new_spec256k1_address
+from address import new_spec256k1_address, decode
 
 
 def test_vector_secp256k1_address():
@@ -25,3 +25,4 @@ def test_vector_secp256k1_address():
         pubkey = bytes(bytearray(pubkey))
         addr = new_spec256k1_address(pubkey)
         assert addr.to_string() == except_address
+        assert decode(except_address).to_string() == addr.to_string()
