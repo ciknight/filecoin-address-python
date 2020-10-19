@@ -7,15 +7,15 @@
 # Distributed under terms of the MIT license.
 from typing import Union
 
-import varints
-from consts import (
+from address import varints
+from address.consts import (
     BlsPublicKeyBytes,
     MaxAddressStringLength,
     MinAddressStringLength,
     PayloadHashLength,
 )
-from exceptions import AddressException
-from utils import (
+from address.exceptions import AddressException
+from address.utils import (
     address_decode,
     address_encode,
     address_hash,

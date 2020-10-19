@@ -10,7 +10,7 @@ import struct
 from base64 import b32encode, b32decode
 from typing import Union
 from hashlib import blake2b
-from consts import Blake2bConfig, payloadHashConfig, checksumHashConfig
+from address.consts import Blake2bConfig, payloadHashConfig, checksumHashConfig
 
 
 # Bytes to Str
